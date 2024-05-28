@@ -6,21 +6,36 @@ import xmlword
 from PySide6.QtWidgets import QApplication, QMainWindow,QFileDialog
 # 导入我们生成的界面
 from ui_main import Ui_MainWindow
-from docx import Document
-import xlwt
-import xlrd
-
+import xmlword2
 # 继承QWidget类，以获取其属性和方法
 class MyWidget(QMainWindow):
     #绑定槽使用
     def start(self):
         self.ui.selectFirstTitle.currentIndexChanged.connect(self.ChangeTextfirst)
         self.ui.selectSecondTitle.currentIndexChanged.connect(self.ChangeTextSecond)
-        self.ui.selectThirdTitle.currentIndexChanged.connect(self.ChangeTextThird)
+        #self.ui.selectThirdTitle.currentIndexChanged.connect(self.ChangeTextThird)
         self.ui.fileBtn.clicked.connect(self.opnefile)
         self.ui.pushButton_xml_header.clicked.connect(self.xmlinfoHeader)
         self.ui.ExcuteResult.clicked.connect(self.Output)
+        self.ui.pushButton_auto_produce.clicked.connect(self.AutoOutput)
         print(self.doc_file_name)
+    def AutoOutput(self):
+        self.ui.textEdit.setText("正在生成中")
+        outputfilename="\\"+self.ui.ResultName.text()+".xls"
+        path=os.getcwd()+outputfilename
+        print(path)
+        whetherexist=os.path.exists(path)
+        if(whetherexist):
+            self.ui.textEdit.setText("文件已存在，请删除或重新命名！")
+            return
+        try:
+            self.xmlSuperiorXmlTool.filename=path
+            self.xmlSuperiorXmlTool.xmlfile=self.doc_file_name
+            self.xmlSuperiorXmlTool.main()
+        except Exception as e:
+            self.ui.textEdit.setText("生成失败")
+            return
+        self.ui.textEdit.setText("生成成功")
     def Output(self):
         self.ui.textEdit.setText("正在生成中")
         outputfilename="\\"+self.ui.ResultName.text()+".xls"
@@ -38,8 +53,8 @@ class MyWidget(QMainWindow):
         self.ui.textEdit.setText("生成成功")
     def ChangeTextSecond(self):
         self.ui.lineEdit_second_title.setText(self.ui.selectSecondTitle.currentText())
-    def ChangeTextThird(self):
-        self.ui.lineEdit_third_title.setText(self.ui.selectThirdTitle.currentText())
+    # def ChangeTextThird(self):
+    #     self.ui.lineEdit_third_title.setText(self.ui.selectThirdTitle.currentText())
     def ChangeTextfirst(self):
         self.ui.lineEdit_first_title.setText(self.ui.selectFirstTitle.currentText())
     #解析doc里的全部标题
@@ -67,6 +82,7 @@ class MyWidget(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.start()
+        self.xmlSuperiorXmlTool=xmlword2.Main("","")
 # 程序入口
 if __name__ == "__main__":
     # 初始化QApplication，界面展示要包含在QApplication初始化之后，结束之前
